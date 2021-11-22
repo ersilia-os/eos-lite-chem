@@ -1,6 +1,8 @@
 import h5py
 import os
 import tensorflow as tf
+from tensorflow.keras.models import load_model
+import onnxruntime as rt
 import numpy as np
 
 from .utils import Normalizer
@@ -8,6 +10,9 @@ from .utils import Normalizer
 from . import REFERENCE_H5
 from . import OUTPUT_H5
 from . import TFLITE_FILE
+from . import ONNX_FILE
+from . import AUTOKERAS_FILE
+
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
@@ -17,7 +22,23 @@ class Predictor(object):
         self.model_dir = model_dir
         self.reference_h5 = os.path.join(ROOT, "..", "data", REFERENCE_H5)
 
-    def predict(self, idxs=None, head=None, tail=None):
+    def _get_X(self, idxs=None, head=None, tail=None):
+        print("Getting X")
+        if idxs is not None:
+            with h5py.File(self.reference_h5, "r") as f:
+                X = f["Values"][idxs]
+        elif head is not None:
+            with h5py.File(self.reference_h5, "r") as f:
+                X = f["Values"][:head]
+        elif tail is not None:
+            with h5py.File(self.reference_h5, "r") as f:
+                X = f["Values"][-tail:]
+        else:
+            with h5py.File(self.reference_h5, "r") as f:
+                X = f["Values"][:]
+        return X
+
+    def predict_tflite(self, idxs=None, head=None, tail=None):
         print("Getting X")
         if idxs is not None:
             with h5py.File(self.reference_h5, "r") as f:
@@ -45,3 +66,23 @@ class Predictor(object):
         n = Normalizer()
         n.load(self.model_dir)
         return n.inverse_transform(y)
+
+    def predict_onnx(self, idxs=None, head=None, tail=None):
+         X = _get_X(self, idxs=None, head=None, tail=None)
+         sess = rt.InferenceSession(os.path.join(self.model_dir, ONNX_FILE))
+         input_name = sess.get_inputs()[0].name
+         output_name = sess.get_outputs()[0].name
+         output_data = sess.run([output_name],{input_name: X})
+         y = np.array(output_data)
+         n = Normalizer()
+         n.load(self.model_dir)
+         return n.inverse_transform(y)
+
+    def predict_autokeras(self, idxs=None, head=None, tail=None):
+         X = _get_X(self, idxs=None, head=None, tail=None)
+         mdl = load_model(os.path.join(self.model_dir, AUTOKERAS_PROJECT_NAME, AUTOKERAS_FILE))
+         y = mdl.predict(X)
+         output_data = np.array(output_data)
+         n = Normalizer()
+         n.load(self.model_dir)
+         return n.inverse_transform(y)
