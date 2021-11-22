@@ -37,7 +37,7 @@ class PrecalculateErsilia(object):
         api = Api(self.model_id, url, self.api_name)
         for result in api.post(input=input, output=output, batch_size=batch_size):
             continue
-        mdl.close()
+        #mdl.close()
 
     def run(self):
         smiles_list = self._read_smiles()
