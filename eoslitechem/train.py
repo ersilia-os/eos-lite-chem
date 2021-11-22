@@ -1,9 +1,10 @@
 import os
+import sys
 import h5py
 import numpy as np
 import autokeras as ak
 import tensorflow as tf
-from . import TFLITE_FILE
+from . import TFLITE_FILE, ONNX_FILE
 from .precalculate import PrecalculateErsilia
 
 from . import REFERENCE_H5
@@ -13,13 +14,16 @@ from . import AUTOKERAS_PROJECT_NAME
 
 from .utils import Normalizer
 
+import subprocess
+
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
 
 class _Trainer(object):
-
-    def __init__(self, reference_h5, precalculated_h5, output_dir, max_molecules, max_trials):
+    def __init__(
+        self, reference_h5, precalculated_h5, output_dir, max_molecules, max_trials
+    ):
         print("Initializing trainer")
         self.reference_h5 = reference_h5
         self.precalculated_h5 = precalculated_h5
@@ -31,9 +35,9 @@ class _Trainer(object):
     def _get_X_y(self):
         print("Geting X and y")
         with h5py.File(self.reference_h5, "r") as f:
-            X = f["Values"][:self.max_molecules]
+            X = f["Values"][: self.max_molecules]
         with h5py.File(self.precalculated_h5, "r") as f:
-            y = f["Values"][:self.max_molecules]
+            y = f["Values"][: self.max_molecules]
         return X, y
 
     def _normalize(self, y):
@@ -45,7 +49,11 @@ class _Trainer(object):
     def _train(self, X, y):
         print("Training with {0} trials".format(self.max_trials))
         os.chdir(self.output_dir)
-        mdl = ak.StructuredDataRegressor(overwrite=False, max_trials=self.max_trials, project_name=AUTOKERAS_PROJECT_NAME)
+        mdl = ak.StructuredDataRegressor(
+            overwrite=False,
+            max_trials=self.max_trials,
+            project_name=AUTOKERAS_PROJECT_NAME,
+        )
         mdl.fit(X, y)
         os.chdir(self.cwd)
         return mdl
@@ -61,8 +69,17 @@ class _Trainer(object):
         output_model = os.path.join(self.output_dir, TFLITE_FILE)
         converter = tf.lite.TFLiteConverter.from_keras_model(input_model)
         tflite_quant_model = converter.convert()
-        with open(output_model, 'wb') as o_:
+        with open(output_model, "wb") as o_:
             o_.write(tflite_quant_model)
+        print("Converting to ONNX")
+        cmd = "{0} -m tf2onnx.convert --opset 13 --tflite {1} --output {2}".format(
+            sys.executable,
+            TFLITE_FILE,
+            ONNX_FILE
+        )
+        print(cmd)
+        subprocess.Popen(cmd, shell=True).wait()
+        print("Conversions done!")
         os.chdir(self.cwd)
 
     def run(self):
@@ -72,10 +89,10 @@ class _Trainer(object):
         self._export(mdl)
 
 
-
 class Trainer(object):
-
-    def __init__(self, model_id, output_dir=None, max_molecules=1000000000, max_trials=1000):
+    def __init__(
+        self, model_id, output_dir=None, max_molecules=1000000000, max_trials=1000
+    ):
         self.model_id = model_id
         self.output_dir = output_dir
         self.max_molecules = max_molecules
@@ -87,13 +104,23 @@ class Trainer(object):
         os.makedirs(self.output_dir, exist_ok=True)
         self.precalculated_h5 = os.path.join(self.output_dir, OUTPUT_H5)
 
-
     def _precalculate_ersilia(self):
-        p = PrecalculateErsilia(model_id=self.model_id, reference_h5=self.reference_h5, output_h5=self.precalculated_h5, max_molecules=self.max_molecules)
+        p = PrecalculateErsilia(
+            model_id=self.model_id,
+            reference_h5=self.reference_h5,
+            output_h5=self.precalculated_h5,
+            max_molecules=self.max_molecules,
+        )
         p.run()
 
     def _train_lite_model(self):
-        t = _Trainer(reference_h5=self.reference_h5, precalculated_h5=self.precalculated_h5, output_dir=self.output_dir, max_molecules=self.max_molecules, max_trials=self.max_trials)
+        t = _Trainer(
+            reference_h5=self.reference_h5,
+            precalculated_h5=self.precalculated_h5,
+            output_dir=self.output_dir,
+            max_molecules=self.max_molecules,
+            max_trials=self.max_trials,
+        )
         t.run()
 
     def _get_size_reference_h5(self):

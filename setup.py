@@ -28,9 +28,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/ersilia-os/eos-lite-chem/",
     packages=find_packages(),
-    install_requires=[
-        "h5py"
-    ],
+    install_requires=["h5py"],
     include_package_data=True,
     zip_safe=True,
     classifiers=(

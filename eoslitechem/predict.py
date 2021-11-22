@@ -13,7 +13,6 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 
 
 class Predictor(object):
-
     def __init__(self, model_dir):
         self.model_dir = model_dir
         self.reference_h5 = os.path.join(ROOT, "..", "data", REFERENCE_H5)
@@ -39,9 +38,9 @@ class Predictor(object):
         output_details = interpreter.get_output_details()
         output_data = []
         for x in X:
-            interpreter.set_tensor(input_details[0]['index'], [x])
+            interpreter.set_tensor(input_details[0]["index"], [x])
             interpreter.invoke()
-            output_data += [interpreter.get_tensor(output_details[0]['index'])[0]]
+            output_data += [interpreter.get_tensor(output_details[0]["index"])[0]]
         y = np.array(output_data)
         n = Normalizer()
         n.load(self.model_dir)
