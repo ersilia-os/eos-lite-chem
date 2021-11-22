@@ -24,20 +24,22 @@ class PrecalculateErsilia(object):
         output = self.output_h5
         batch_size = 100
         print("Calculating")
-        mdl = AutoService(self.model_id)
-        mdl.serve()
+        srv = AutoService(self.model_id)
+        srv.serve()
         if self.api_name is None:
-            api_names = mdl.get_apis()
+            api_names = srv.get_apis()
             assert len(api_names) == 1
             self.api_name = api_names[0]
         tmp_file = tmp_pid_file(self.model_id)
+        with open(tmp_file, "a+") as f:
+            f.write("{0} {1}{2}".format(srv.service.pid, srv.service.url, os.linesep))
         with open(tmp_file, "r") as f:
             for l in f:
                 url = l.rstrip().split()[1]
         api = Api(self.model_id, url, self.api_name)
         for result in api.post(input=input, output=output, batch_size=batch_size):
             continue
-        #mdl.close()
+        srv.close()
 
     def run(self):
         smiles_list = self._read_smiles()
