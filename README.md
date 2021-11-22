@@ -3,6 +3,13 @@ A light version of Ersilia Models, based on pre-trained chemical language models
 
 TODO: Documentation
 
+### Packages
+autokeras==1.0.16.post1
+onnxruntime
+tf2onnx
+rdkit2021.03
+ersilia
+
 ## Train
 
 ```python

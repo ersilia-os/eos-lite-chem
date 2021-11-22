@@ -1,5 +1,4 @@
 import h5py
-from ersilia import ErsiliaModel
 from ersilia.serve.api import Api
 from ersilia.serve.autoservice import AutoService
 from ersilia.cli.commands.utils.utils import tmp_pid_file
@@ -25,7 +24,7 @@ class PrecalculateErsilia(object):
         output = self.output_h5
         batch_size = 100
         print("Calculating")
-        mdl = ErsiliaModel(self.model_id)
+        mdl = AutoService(self.model_id)
         mdl.serve()
         if self.api_name is None:
             api_names = mdl.get_apis()
