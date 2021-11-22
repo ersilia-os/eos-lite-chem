@@ -14,7 +14,7 @@ Trainer("eos2r5a", max_molecules=100, max_trials=1).fit()
 ## Predict
 
 ```python
-from eoslitechem.predict import Predictor
+from eoslitechem.predictors.onnx import Predictor
 
 y = Predictor("eos2r5a").predict(head=100)
 print(y)
