@@ -8,7 +8,7 @@ from ..utils import Normalizer
 from .. import ONNX_FILE
 
 
-class Predictor(BasePredictor)
+class Predictor(BasePredictor):
     def __init__(self, model_dir):
         BasePredictor.__init__(self, model_dir=model_dir)
 
