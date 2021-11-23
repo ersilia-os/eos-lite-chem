@@ -5,7 +5,11 @@ import numpy as np
 import autokeras as ak
 import tensorflow as tf
 from . import TFLITE_FILE, ONNX_FILE
-from .precalculate import PrecalculateErsilia
+
+try:
+    from .precalculate import PrecalculateErsilia
+except:
+    PrecalculateErsilia = None
 
 from . import REFERENCE_H5
 from . import OUTPUT_H5
@@ -145,6 +149,7 @@ class Trainer(object):
 
     def fit(self):
         if not self._precalculations_available():
+            assert PrecalculateErsilia is not None, "Ersilia needs to be installed if no precalculations are available!"
             self._precalculate_ersilia()
         else:
             print("Precalculations are available!")
