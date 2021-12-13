@@ -9,7 +9,6 @@ try:
     from .precalculate import PrecalculateErsilia
 except:
     PrecalculateErsilia = None
-from .precalculate import PrecalculateErsilia
 from .trainers.tuner import TunerRegressorTrainer
 from .trainers.autokeras import AutoKerasRegressorTrainer
 
