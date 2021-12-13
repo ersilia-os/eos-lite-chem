@@ -1,16 +1,16 @@
 import os
 import sys
 import h5py
-import numpy as np
-import autokeras as ak
 import tensorflow as tf
+
 from . import TFLITE_FILE, ONNX_FILE
 from .precalculate import PrecalculateErsilia
+from .trainers.tuner import TunerRegressorTrainer
+from .trainers.autokeras import AutoKerasRegressorTrainer
 
 from . import REFERENCE_H5
 from . import OUTPUT_H5
 from . import TFLITE_FILE
-from . import AUTOKERAS_PROJECT_NAME
 
 from .utils import Normalizer
 
@@ -33,7 +33,7 @@ class _Trainer(object):
         self.cwd = os.getcwd()
 
     def _get_X_y(self):
-        print("Geting X and y")
+        print("Getting X and y")
         with h5py.File(self.reference_h5, "r") as f:
             X = f["Values"][: self.max_molecules]
         with h5py.File(self.precalculated_h5, "r") as f:
@@ -46,15 +46,19 @@ class _Trainer(object):
         n.save(self.output_dir)
         return n.transform(y)
 
-    def _train(self, X, y):
+    def _train_autokeras(self, X, y):
         print("Training with {0} trials".format(self.max_trials))
         os.chdir(self.output_dir)
-        mdl = ak.StructuredDataRegressor(
-            overwrite=False,
-            max_trials=self.max_trials,
-            project_name=AUTOKERAS_PROJECT_NAME,
-        )
-        mdl.fit(X, y)
+        mdl = AutoKerasRegressorTrainer(X, y)
+        mdl.fit(max_trials=self.max_trials)
+        os.chdir(self.cwd)
+        return mdl
+
+    def _train_tuner(self, X, y):
+        print("Training naively (with tuner, not with AutoKeras)")
+        os.chdir(self.output_dir)
+        mdl = TunerRegressorTrainer(X, y)
+        mdl.fit()
         os.chdir(self.cwd)
         return mdl
 
@@ -64,8 +68,6 @@ class _Trainer(object):
         input_model = mdl.export_model()
         print(input_model.summary())
         print("Converting to TFLITE")
-        input_name = "input_1"
-        output_node_name = "regression_head_1"
         output_model = os.path.join(self.output_dir, TFLITE_FILE)
         converter = tf.lite.TFLiteConverter.from_keras_model(input_model)
         tflite_quant_model = converter.convert()
@@ -85,22 +87,25 @@ class _Trainer(object):
     def run(self):
         X, y = self._get_X_y()
         y = self._normalize(y)
-        mdl = self._train(X, y)
+        if self.max_trials == 0:
+            mdl = self._train_tuner(X, y)
+        else:
+            mdl = self._train_autokeras(X, y)
         self._export(mdl)
 
 
 class Trainer(object):
     def __init__(
-        self, model_id, output_dir=None, max_molecules=1000000000, max_trials=1000
+        self, model_id, output_dir=".", max_molecules=1000000000, max_trials=1000
     ):
+        assert model_id is not None and output_dir is not None
+        
         self.model_id = model_id
-        self.output_dir = output_dir
+        self.output_dir = os.path.join(os.path.abspath(output_dir), model_id)
+        os.makedirs(self.output_dir, exist_ok=True)
         self.max_molecules = max_molecules
         self.max_trials = max_trials
         self.reference_h5 = os.path.join(ROOT, "..", "data", REFERENCE_H5)
-        if output_dir is None:
-            output_dir = self.model_id
-        self.output_dir = os.path.abspath(output_dir)
         os.makedirs(self.output_dir, exist_ok=True)
         self.precalculated_h5 = os.path.join(self.output_dir, OUTPUT_H5)
 

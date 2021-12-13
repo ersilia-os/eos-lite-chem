@@ -9,4 +9,7 @@ NORMALIZE_FILE = "normalize.json"
 
 # Training parameters
 AUTOKERAS_PROJECT_NAME = "autokeras"
-AUTOKERAS_MODEL_FOLDER= "best_model"
+AUTOKERAS_MODEL_FOLDER = "best_model"
+
+TUNER_PROJECT_NAME = "tuner"
+TUNER_MODEL_FOLDER = "best_model"

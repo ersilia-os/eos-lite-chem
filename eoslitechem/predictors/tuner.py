@@ -5,8 +5,8 @@ from tensorflow.keras.models import load_model
 
 from ..predict import BasePredictor
 from ..utils import Normalizer
-from .. import AUTOKERAS_PROJECT_NAME
-from .. import AUTOKERAS_MODEL_FOLDER
+from .. import TUNER_PROJECT_NAME
+from .. import TUNER_MODEL_FOLDER
 
 
 class Predictor(BasePredictor):
@@ -15,7 +15,7 @@ class Predictor(BasePredictor):
 
     def predict(self, idxs=None, head=None, tail=None):
         X = self._get_X(idxs=idxs, head=head, tail=tail)
-        mdl_path=os.path.join(self.model_dir, AUTOKERAS_PROJECT_NAME, AUTOKERAS_MODEL_FOLDER)
+        mdl_path=os.path.join(self.model_dir, TUNER_PROJECT_NAME, TUNER_MODEL_FOLDER)
         if not os.path.exists(mdl_path):
             print("not Found")
         mdl = load_model(mdl_path, custom_objects=ak.CUSTOM_OBJECTS)
