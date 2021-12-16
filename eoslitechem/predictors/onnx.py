@@ -2,7 +2,6 @@ import os
 import numpy as np
 import onnxruntime as rt
 
-
 from ..predict import BasePredictor
 from ..utils import Normalizer
 from .. import ONNX_FILE

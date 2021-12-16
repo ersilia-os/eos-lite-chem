@@ -41,7 +41,7 @@ class TunerRegressorTrainer(object):
                              directory=TUNER_PROJECT_NAME,
                              project_name="trials")
         stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
-        self.tuner.search(X, y, epochs=50, validation_split=0.2, callbacks=[stop_early])
+        self.tuner.search(X, y, epochs=50, validation_split=0.2, callbacks=[stop_early], verbose=True)
         self.best_hps=self.tuner.get_best_hyperparameters(num_trials=1)[0]
 
     def _get_best_epoch(self, X, y):

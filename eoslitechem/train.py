@@ -3,7 +3,7 @@ import sys
 import h5py
 import tensorflow as tf
 
-from . import TFLITE_FILE, ONNX_FILE
+from . import ONNX_FILE
 
 try:
     from .precalculate import PrecalculateErsilia
@@ -90,6 +90,8 @@ class _Trainer(object):
 
     def run(self):
         X, y = self._get_X_y()
+        print("X shape: {0}".format(X.shape))
+        print("y shape: {0}".format(y.shape))
         y = self._normalize(y)
         if self.max_trials == 0:
             mdl = self._train_tuner(X, y)
