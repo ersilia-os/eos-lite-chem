@@ -9,6 +9,7 @@ from . import LAMBDA_CONFIG
 
 BENTOML_AWS_LAMBDA_TOOL = "aws-lambda-deploy"
 LAMBDA_CONFIG_JSON = "lambda_config.json"
+SERVICE_NAME = "OnnxInference"
 
 
 class AwsLambdaDeployer(object):
@@ -37,7 +38,7 @@ class AwsLambdaDeployer(object):
         shutil.rmtree(tool_dir)
 
     def _get_bundle_path(self):
-        cmd = "bentoml get OnnxInference:latest --print-location -q"
+        cmd = "bentoml get {0}:latest --print-location -q".format(SERVICE_NAME)
         tmp_dir = tempfile.mkdtemp()
         bundle_file = "bundle.txt"
         with open(os.path.join(tmp_dir, bundle_file), "w") as f:
@@ -67,6 +68,10 @@ class AwsLambdaDeployer(object):
         cmd = "python {0} {1} {2}".format(describe_script, self.model_id, config_file)
         subprocess.Popen(cmd, shell=True).wait()
 
+    def _delete_bundle(self):
+        cmd = "bentoml delete {0} -y".format(SERVICE_NAME)
+        subprocess.Popen(cmd, shell=True).wait()
+
     def _delete_local_deployment_folder(self):
         for n in os.listdir():
             if "-lambda-deployable" in n:
@@ -78,4 +83,6 @@ class AwsLambdaDeployer(object):
         self._deploy_bundle(tool_dir)
         self._describe(tool_dir)
         self._delete_aws_lambda_tool(tool_dir)
+        self._delete_bundle()
         self._delete_local_deployment_folder()
+        
