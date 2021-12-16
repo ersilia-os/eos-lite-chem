@@ -62,12 +62,15 @@ class AwsLambdaDeployer(object):
         cmd = "python {0} {1} {2}".format(describe_script, self.model_id, config_file)
         subprocess.Popen(cmd, shell=True).wait()
 
-    def _save_description(self):
-        pass
+    def _delete_local_deployment_folder(self):
+        for n in os.listdir():
+            if "-lambda-deployable" in n:
+                print("Deleting lambda deployable")
+                shutil.rmtree(n)
 
     def deploy(self):
         tool_dir = self._download_bentoml_aws_lambda_tool()
         self._deploy_bundle(tool_dir)
         self._describe(tool_dir)
         self._delete_aws_lambda_tool(tool_dir)
-
+        self._delete_local_deployment_folder()
