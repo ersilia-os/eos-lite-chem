@@ -79,9 +79,7 @@ class _Trainer(object):
             o_.write(tflite_quant_model)
         print("Converting to ONNX")
         cmd = "{0} -m tf2onnx.convert --opset 13 --tflite {1} --output {2}".format(
-            sys.executable,
-            TFLITE_FILE,
-            ONNX_FILE
+            sys.executable, TFLITE_FILE, ONNX_FILE
         )
         print(cmd)
         subprocess.Popen(cmd, shell=True).wait()
@@ -105,7 +103,7 @@ class Trainer(object):
         self, model_id, output_dir=".", max_molecules=1000000000, max_trials=1000
     ):
         assert model_id is not None and output_dir is not None
-        
+
         self.model_id = model_id
         self.output_dir = os.path.join(os.path.abspath(output_dir), model_id)
         os.makedirs(self.output_dir, exist_ok=True)
@@ -156,7 +154,9 @@ class Trainer(object):
 
     def fit(self):
         if not self._precalculations_available():
-            assert PrecalculateErsilia is not None, "Ersilia needs to be installed if no precalculations are available!"
+            assert (
+                PrecalculateErsilia is not None
+            ), "Ersilia needs to be installed if no precalculations are available!"
             self._precalculate_ersilia()
         else:
             print("Precalculations are available!")

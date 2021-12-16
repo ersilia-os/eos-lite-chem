@@ -11,7 +11,6 @@ BENTOML_AWS_LAMBDA_TOOL = "aws-lambda-deploy"
 LAMBDA_CONFIG_JSON = "lambda_config.json"
 
 
-
 class AwsLambdaDeployer(object):
     def __init__(self, model_id):
         self.model_id = model_id
@@ -52,13 +51,19 @@ class AwsLambdaDeployer(object):
     def _deploy_bundle(self, tool_dir):
         deploy_script = os.path.join(tool_dir, BENTOML_AWS_LAMBDA_TOOL, "deploy.py")
         bento_bundle_path = self._get_bundle_path()
-        config_file = os.path.join(tool_dir, BENTOML_AWS_LAMBDA_TOOL, LAMBDA_CONFIG_JSON)
-        cmd = "python {0} {1} {2} {3}".format(deploy_script, bento_bundle_path, self.model_id, config_file)
+        config_file = os.path.join(
+            tool_dir, BENTOML_AWS_LAMBDA_TOOL, LAMBDA_CONFIG_JSON
+        )
+        cmd = "python {0} {1} {2} {3}".format(
+            deploy_script, bento_bundle_path, self.model_id, config_file
+        )
         subprocess.Popen(cmd, shell=True).wait()
 
     def _describe(self, tool_dir):
         describe_script = os.path.join(tool_dir, BENTOML_AWS_LAMBDA_TOOL, "describe.py")
-        config_file = os.path.join(tool_dir, BENTOML_AWS_LAMBDA_TOOL, LAMBDA_CONFIG_JSON)
+        config_file = os.path.join(
+            tool_dir, BENTOML_AWS_LAMBDA_TOOL, LAMBDA_CONFIG_JSON
+        )
         cmd = "python {0} {1} {2}".format(describe_script, self.model_id, config_file)
         subprocess.Popen(cmd, shell=True).wait()
 

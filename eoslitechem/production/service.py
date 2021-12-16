@@ -10,7 +10,6 @@ from bentoml.adapters import DataframeInput
 @env(infer_pip_packages=True)
 @artifacts([OnnxModelArtifact("model"), JSONArtifact("normalizer")])
 class OnnxInference(BentoService):
-
     def denormalize(self, y, norm_json):
         means = norm_json["means"]
         stds = norm_json["stds"]
@@ -24,7 +23,7 @@ class OnnxInference(BentoService):
         input_data = df.to_numpy().astype(np.float32)
         input_name = self.artifacts.model.get_inputs()[0].name
         output_name = self.artifacts.model.get_outputs()[0].name
-        output_data = self.artifacts.model.run([output_name],{input_name: input_data})
+        output_data = self.artifacts.model.run([output_name], {input_name: input_data})
         y = np.array(output_data[0])
         norm_json = self.artifacts.normalizer
         return self.denormalize(y, norm_json)

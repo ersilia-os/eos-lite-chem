@@ -16,8 +16,8 @@ class Predictor(BasePredictor):
         sess = rt.InferenceSession(os.path.join(self.model_dir, ONNX_FILE))
         input_name = sess.get_inputs()[0].name
         output_name = sess.get_outputs()[0].name
-        output_data = sess.run([output_name],{input_name: X})
-        y=np.array(output_data[0])
+        output_data = sess.run([output_name], {input_name: X})
+        y = np.array(output_data[0])
         n = Normalizer()
         n.load(self.model_dir)
         return n.inverse_transform(y)

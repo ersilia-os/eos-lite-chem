@@ -8,7 +8,6 @@ from ..production import LAMBDA_CONFIG
 
 
 class AwsLambdaService(object):
-
     def __init__(self, model_id):
         self.model_id = model_id
         self.endpoint_url = self.describe()["EndpointUrl"]
@@ -28,7 +27,9 @@ class AwsLambdaService(object):
         name = "-".join(items)
         if len(name) > max_length:
             raise Exception(
-                "AWS resource name {} exceeds maximum length of {}".format(name, max_length)
+                "AWS resource name {} exceeds maximum length of {}".format(
+                    name, max_length
+                )
             )
         invalid_chars = re.compile("[^a-zA-Z0-9-]|_")
         name = re.sub(invalid_chars, "-", name)
@@ -40,8 +41,7 @@ class AwsLambdaService(object):
         # repo should be (?:[a-z0-9]+(?:[._-][a-z0-9]+)*/)*[a-z0-9]+(?:[._-][a-z0-9]+)*''
         repo_name = self.generate_aws_compatible_string(f"{name}-repo").lower()
         return sam_template_name, deployment_stack_name, repo_name
-        
-        
+
     def describe(self):
         # get data about cf stack
         _, stack_name, _ = self.generate_lambda_resource_names(self.model_id)
@@ -72,9 +72,9 @@ class AwsLambdaService(object):
         outputs = {o["OutputKey"]: o["OutputValue"] for o in outputs}
         info_json.update(outputs)
         return info_json
-    
+
     def post(self, data):
-        
+
         # make it json serializable
         X = []
         for d in data:
@@ -85,6 +85,7 @@ class AwsLambdaService(object):
         res = requests.post(
             "{0}/run".format(url),
             headers={"content-type": "application/json"},
-            data=json.dumps(X)).text
+            data=json.dumps(X),
+        ).text
 
         return res

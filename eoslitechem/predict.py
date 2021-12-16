@@ -6,6 +6,7 @@ from . import REFERENCE_H5
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
+
 class BasePredictor(object):
     def __init__(self, model_dir):
         self.model_dir = model_dir

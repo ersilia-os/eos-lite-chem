@@ -6,6 +6,7 @@ from ..predict import BasePredictor
 from ..utils import Normalizer
 from .. import TFLITE_FILE
 
+
 class Predictor(BasePredictor):
     def __init__(self, model_dir):
         BasePredictor.__init__(self, model_dir=model_dir)

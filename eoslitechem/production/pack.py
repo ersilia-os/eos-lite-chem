@@ -5,7 +5,6 @@ import json
 
 
 class Packer(object):
-
     def __init__(self, model_path):
         self.model_path = os.path.abspath(model_path)
 

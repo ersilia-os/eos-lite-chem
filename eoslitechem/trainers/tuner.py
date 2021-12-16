@@ -7,7 +7,6 @@ from .. import TUNER_PROJECT_NAME, TUNER_MODEL_FOLDER
 
 
 class TunerRegressorTrainer(object):
-
     def __init__(self, X, y):
         self.X = X
         self.y = y
@@ -19,39 +18,49 @@ class TunerRegressorTrainer(object):
 
         # Tune the number of units in the first Dense layer
         # Choose an optimal value between 32-512
-        hp_units = hp.Int('units', min_value=32, max_value=512, step=32)
-        model.add(keras.layers.Dense(units=hp_units, activation='relu', input_shape=(self.input_shape, )))
+        hp_units = hp.Int("units", min_value=32, max_value=512, step=32)
+        model.add(
+            keras.layers.Dense(
+                units=hp_units, activation="relu", input_shape=(self.input_shape,)
+            )
+        )
         model.add(keras.layers.Dense(self.output_shape))
 
         # Tune the learning rate for the optimizer
         # Choose an optimal value from 0.01, 0.001, or 0.0001
-        hp_learning_rate = hp.Choice('learning_rate', values=[1e-2, 1e-3, 1e-4])
+        hp_learning_rate = hp.Choice("learning_rate", values=[1e-2, 1e-3, 1e-4])
 
-        model.compile(optimizer=keras.optimizers.Adam(learning_rate=hp_learning_rate),
-                      loss="mean_squared_error",
-                      metrics=None)
+        model.compile(
+            optimizer=keras.optimizers.Adam(learning_rate=hp_learning_rate),
+            loss="mean_squared_error",
+            metrics=None,
+        )
 
         return model
 
     def _search(self, X, y):
-        self.tuner = kt.Hyperband(self._model_builder,
-                             objective='val_loss',
-                             max_epochs=10,
-                             factor=3,
-                             directory=TUNER_PROJECT_NAME,
-                             project_name="trials")
-        stop_early = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=5)
-        self.tuner.search(X, y, epochs=50, validation_split=0.2, callbacks=[stop_early], verbose=True)
-        self.best_hps=self.tuner.get_best_hyperparameters(num_trials=1)[0]
+        self.tuner = kt.Hyperband(
+            self._model_builder,
+            objective="val_loss",
+            max_epochs=10,
+            factor=3,
+            directory=TUNER_PROJECT_NAME,
+            project_name="trials",
+        )
+        stop_early = tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=5)
+        self.tuner.search(
+            X, y, epochs=50, validation_split=0.2, callbacks=[stop_early], verbose=True
+        )
+        self.best_hps = self.tuner.get_best_hyperparameters(num_trials=1)[0]
 
     def _get_best_epoch(self, X, y):
         # Build the model with the optimal hyperparameters and train it on the data for 50 epochs
         model = self.tuner.hypermodel.build(self.best_hps)
         history = model.fit(X, y, epochs=50, validation_split=0.2)
 
-        val_per_epoch = history.history['val_loss']
+        val_per_epoch = history.history["val_loss"]
         self.best_epoch = val_per_epoch.index(max(val_per_epoch)) + 1
-        print('Best epoch: %d' % (self.best_epoch,))
+        print("Best epoch: %d" % (self.best_epoch,))
 
     def _final_train(self, X, y):
         self.hypermodel = self.tuner.hypermodel.build(self.best_hps)
