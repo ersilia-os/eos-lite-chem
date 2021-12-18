@@ -3,15 +3,19 @@ import sys
 import h5py
 import tensorflow as tf
 
-from . import ONNX_FILE
-
 try:
     from .precalculate import PrecalculateErsilia
 except:
     PrecalculateErsilia = None
-from .trainers.tuner import TunerRegressorTrainer
-from .trainers.autokeras import AutoKerasRegressorTrainer
 
+from .trainers.tuner import TunerRegressorTrainer
+
+try:
+    from .trainers.autokeras import AutoKerasRegressorTrainer
+except:
+    AutoKerasRegressorTrainer = None
+
+from . import ONNX_FILE
 from . import REFERENCE_H5
 from . import OUTPUT_H5
 from . import TFLITE_FILE
@@ -23,6 +27,8 @@ import subprocess
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 
+TRAIN_SIZE = 0.9
+
 
 class _Trainer(object):
     def __init__(
@@ -32,16 +38,21 @@ class _Trainer(object):
         self.reference_h5 = reference_h5
         self.precalculated_h5 = precalculated_h5
         self.output_dir = output_dir
-        self.max_molecules = max_molecules
+        self.n = min(max_molecules, self._count_rows(reference_h5))
         self.max_trials = max_trials
         self.cwd = os.getcwd()
 
+    def _count_rows(self, h5_file):
+        with h5py.File(h5_file, "r") as f:
+            file_len = f["Values"].shape[0]
+        return file_len
+    
     def _get_X_y(self):
         print("Getting X and y")
         with h5py.File(self.reference_h5, "r") as f:
-            X = f["Values"][: self.max_molecules]
+            X = f["Values"][: int(self.n*TRAIN_SIZE)]
         with h5py.File(self.precalculated_h5, "r") as f:
-            y = f["Values"][: self.max_molecules]
+            y = f["Values"][: int(self.n*TRAIN_SIZE)]
         return X, y
 
     def _normalize(self, y):
@@ -91,7 +102,7 @@ class _Trainer(object):
         print("X shape: {0}".format(X.shape))
         print("y shape: {0}".format(y.shape))
         y = self._normalize(y)
-        if self.max_trials == 0:
+        if self.max_trials == 0 or AutoKerasRegressorTrainer is None:
             mdl = self._train_tuner(X, y)
         else:
             mdl = self._train_autokeras(X, y)
@@ -139,11 +150,14 @@ class Trainer(object):
 
     def _precalculations_available(self):
         if not os.path.exists(self.precalculated_h5):
+            print("Precalculated file does not exist", self.precalculated_h5)
             return False
         try:
             r = self._get_size_reference_h5()
+            print(r)
             with h5py.File(self.precalculated_h5, "r") as f:
                 n = f["Values"].shape[0]
+            print(n)
             if n < r and n < self.max_molecules:
                 return False
             else:
@@ -157,6 +171,7 @@ class Trainer(object):
             assert (
                 PrecalculateErsilia is not None
             ), "Ersilia needs to be installed if no precalculations are available!"
+            print("Precalculating")
             self._precalculate_ersilia()
         else:
             print("Precalculations are available!")

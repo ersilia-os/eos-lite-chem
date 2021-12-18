@@ -11,8 +11,8 @@ class Predictor(BasePredictor):
     def __init__(self, model_dir):
         BasePredictor.__init__(self, model_dir=model_dir)
 
-    def predict(self, idxs=None, head=None, tail=None):
-        X = self._get_X(idxs=idxs, head=head, tail=tail)
+    def predict(self, X=None, idxs=None, head=None, tail=None):
+        X = self._get_X(X=X, idxs=idxs, head=head, tail=tail)
         print("Loading model for prediction")
         interpreter = tf.lite.Interpreter(os.path.join(self.model_dir, TFLITE_FILE))
         interpreter.allocate_tensors()

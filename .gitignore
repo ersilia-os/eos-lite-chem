@@ -1,5 +1,7 @@
 # Development files
 development.py
+test_model.py
+test.py
 
 # Large files
 reference_library.h5

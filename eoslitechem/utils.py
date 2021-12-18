@@ -9,6 +9,7 @@ class Normalizer(object):
     def __init__(self):
         self.means = None
         self.stds = None
+        self.n = None
 
     def fit(self, data):
         self.means = []
@@ -18,6 +19,7 @@ class Normalizer(object):
             self.stds += [np.nanstd(data[:, j])]
         self.means = [float(x) for x in self.means]
         self.stds = [float(x) for x in self.stds]
+        self.n = data.shape[0]
 
     def transform(self, data):
         data_ = np.zeros(data.shape, dtype=data.dtype)
@@ -35,7 +37,7 @@ class Normalizer(object):
 
     def save(self, dir_name):
         with open(os.path.join(dir_name, NORMALIZE_FILE), "w") as f:
-            data = {"means": self.means, "stds": self.stds}
+            data = {"means": self.means, "stds": self.stds, "n": self.n}
             json.dump(data, f, indent=4)
 
     def load(self, dir_name):
@@ -43,6 +45,7 @@ class Normalizer(object):
             data = json.load(f)
             self.means = data["means"]
             self.stds = data["stds"]
+            self.n = data["n"]
 
 
 class ReferenceLibraryDownloader(object):

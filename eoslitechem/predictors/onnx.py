@@ -11,8 +11,8 @@ class Predictor(BasePredictor):
     def __init__(self, model_dir):
         BasePredictor.__init__(self, model_dir=model_dir)
 
-    def predict(self, idxs=None, head=None, tail=None):
-        X = self._get_X(idxs=idxs, head=head, tail=tail)
+    def predict(self, X=None, idxs=None, head=None, tail=None):
+        X = self._get_X(X=X, idxs=idxs, head=head, tail=tail)
         sess = rt.InferenceSession(os.path.join(self.model_dir, ONNX_FILE))
         input_name = sess.get_inputs()[0].name
         output_name = sess.get_outputs()[0].name

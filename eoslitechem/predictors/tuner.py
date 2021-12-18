@@ -13,8 +13,8 @@ class Predictor(BasePredictor):
     def __init__(self, model_dir):
         BasePredictor.__init__(self, model_dir=model_dir)
 
-    def predict(self, idxs=None, head=None, tail=None):
-        X = self._get_X(idxs=idxs, head=head, tail=tail)
+    def predict(self, X=None, idxs=None, head=None, tail=None):
+        X = self._get_X(X=X, idxs=idxs, head=head, tail=tail)
         mdl_path = os.path.join(self.model_dir, TUNER_PROJECT_NAME, TUNER_MODEL_FOLDER)
         if not os.path.exists(mdl_path):
             print("not Found")

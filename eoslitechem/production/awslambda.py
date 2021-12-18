@@ -85,4 +85,3 @@ class AwsLambdaDeployer(object):
         self._delete_aws_lambda_tool(tool_dir)
         self._delete_bundle()
         self._delete_local_deployment_folder()
-        
