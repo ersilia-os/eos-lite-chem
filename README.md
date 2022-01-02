@@ -34,7 +34,7 @@ Trainer("<ersilia model id>", max_trials=1)._precalculate_ersilia()
 ```
 
 ## Train
-Precalculate the activities of the reference library (if not existing) and train a neural network using autokeras (if max_trials =  1 or above) or a simple one_layer Keras-based neural network (if max_trials = -1)
+Precalculate the activities of the reference library (if not existing) and train a neural network using autokeras (if max_trials =  1 or above) or a simple one_layer Keras-based neural network (if max_trials = 0)
 
 ```python
 from eoslitechem.train import Trainer
