@@ -59,7 +59,7 @@ class TunerRegressorTrainer(object):
         history = model.fit(X, y, epochs=50, validation_split=0.2)
 
         val_per_epoch = history.history["val_loss"]
-        self.best_epoch = val_per_epoch.index(max(val_per_epoch)) + 1
+        self.best_epoch = val_per_epoch.index(min(val_per_epoch)) + 1
         print("Best epoch: %d" % (self.best_epoch,))
 
     def _final_train(self, X, y):
