@@ -1,7 +1,7 @@
 import os
 import tensorflow as tf
 from tensorflow import keras
-from autokeras.tuners.hyperband import keras_tuner as kt
+import kerastuner as kt
 
 from .. import TUNER_PROJECT_NAME, TUNER_MODEL_FOLDER
 
