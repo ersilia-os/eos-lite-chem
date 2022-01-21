@@ -13,3 +13,6 @@ AUTOKERAS_MODEL_FOLDER = "best_model"
 
 TUNER_PROJECT_NAME = "tuner"
 TUNER_MODEL_FOLDER = "best_model"
+
+TUNER_PROJECT_NAME_3L = "tuner_3l"
+TUNER_MODEL_FOLDER_3L = "best_model"

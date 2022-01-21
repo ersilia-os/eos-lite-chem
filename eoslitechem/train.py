@@ -9,6 +9,7 @@ except:
     PrecalculateErsilia = None
 
 from .trainers.tuner import TunerRegressorTrainer
+from .trainers.tuner_3l import Tuner3LRegressorTrainer
 
 try:
     from .trainers.autokeras import AutoKerasRegressorTrainer
@@ -77,6 +78,14 @@ class _Trainer(object):
         os.chdir(self.cwd)
         return mdl
 
+    def _train_tuner_3l(self, X, y):
+        print("Training naively (with tuner_3L, not with AutoKeras)")
+        os.chdir(self.output_dir)
+        mdl = Tuner3LRegressorTrainer(X, y)
+        mdl.fit()
+        os.chdir(self.cwd)
+        return mdl
+
     def _export(self, mdl):
         print("Exporting model")
         os.chdir(self.output_dir)
@@ -102,8 +111,10 @@ class _Trainer(object):
         print("X shape: {0}".format(X.shape))
         print("y shape: {0}".format(y.shape))
         y = self._normalize(y)
-        if self.max_trials == 0 or AutoKerasRegressorTrainer is None:
+        if self.max_trials == 0:
             mdl = self._train_tuner(X, y)
+        elif self.max_trials == -1 or AutoKerasRegressorTrainer is None:
+            mdl = self._train_tuner_3l(X, y)
         else:
             mdl = self._train_autokeras(X, y)
         self._export(mdl)
