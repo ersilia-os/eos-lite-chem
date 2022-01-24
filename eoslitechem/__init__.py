@@ -16,3 +16,6 @@ TUNER_MODEL_FOLDER = "best_model"
 
 TUNER_PROJECT_NAME_3L = "tuner_3l"
 TUNER_MODEL_FOLDER_3L = "best_model"
+
+TUNER_PROJECT_NAME_A = "tuner_auto"
+TUNER_MODEL_FOLDER_A = "best_model"
